@@ -1,4 +1,13 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
+import { ProductsService } from '../services/products.service';
+import { ProductFilters } from '../dto/product-filters';
 
 @Controller('products')
-export class ProductsController {}
+export class ProductsController {
+    constructor(private readonly productsService: ProductsService) {}
+
+    @Get()
+    async findPaginated(@Query() query: ProductFilters) {
+        return this.productsService.findPaginated(query);
+    }
+}
