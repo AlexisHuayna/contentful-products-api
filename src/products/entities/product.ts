@@ -1,0 +1,58 @@
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+
+@Entity({ name: 'products' })
+export class Product {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
+    @Index()
+    @Column({ type: 'varchar', unique: true})
+    externalId: string;
+
+    @Column({ type: 'int', nullable: true})
+    sku: number;
+
+    @Column({ type: 'varchar'})
+    name: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    brand: string;
+
+    @Index()
+    @Column({ type: 'varchar', nullable: true })
+    model: string;
+
+    @Index()
+    @Column({ type: 'varchar', nullable: true })
+    category: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    color: string;
+
+    @Column({ type: 'numeric', nullable: true })
+    price: number | null;
+
+    @Column({ type: 'varchar', nullable: true })
+    currency: string | null;
+
+    @Column({ type: 'int', nullable: true })
+    stock: number | null;
+
+    @Column({ type: 'timestamptz', nullable: true })
+    contentCreatedAt: Date;
+    
+    @Column({ type: 'timestamptz', nullable: true })
+    contentUpdatedAt: Date;
+
+    @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+    updatedAt: Date;
+
+    @Column({ type: 'boolean', default: false })
+    deleted: boolean;
+
+    @DeleteDateColumn({ type: 'timestamptz', nullable: true })
+    deletedAt: Date | null;
+}
