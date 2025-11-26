@@ -9,6 +9,9 @@ config({
     path: resolve(process.cwd(), '.env'),
 });
 
+const isProduction = __dirname.includes('dist') || process.env.NODE_ENV === 'production';
+const migrationExtension = isProduction ? 'js' : 'ts';
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DATABASE_HOST || 'localhost',
@@ -17,6 +20,6 @@ export const AppDataSource = new DataSource({
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'products_db',
   entities: [Product],
-  migrations: [__dirname + '/migrations/*.ts'],
+  migrations: [__dirname + '/migrations/*.' + migrationExtension],
   synchronize: false,
 });
