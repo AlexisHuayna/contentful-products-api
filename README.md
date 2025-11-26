@@ -1,75 +1,96 @@
-## Description
+# Products API – Contentful Sync (NestJS)
 
-Initial commit
+This project is a small backend service built with **NestJS** and **PostgreSQL**.  
+Main purpose is to sync products from **Contentful**, store them locally, and expose two types of APIs:
 
-## Project setup
+- A **public API** to list active products.
+- A **private API** (JWT-protected) that exposes a set of product reports.
 
-```bash
-$ npm install
-```
+Everything runs inside **Docker**, including database migrations.  
+The API is fully documented through **Swagger**.
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## 🚀 Tech Stack
 
-# watch mode
-$ npm run start:dev
+- Node.js **20 LTS**
+- NestJS **10**
+- TypeScript
+- PostgreSQL **16**
+- TypeORM (with migrations)
+- Contentful Delivery API
+- JWT Authentication (Passport)
+- Docker & Docker Compose
+- Swagger (OpenAPI)
 
-# production mode
-$ npm run start:prod
-```
+---
 
-## Run tests
+## 📦 Architecture Overview
 
-```bash
-# unit tests
-$ npm run test
+### **ContentfulModule**
+Handles integration with Contentful using Nest’s `HttpModule`.  
+Responsible for fetching all products from the CMS.
 
-# e2e tests
-$ npm run test:e2e
+### **ProductsModule**
+- Defines the `Product` entity.
+- Maps Contentful entries into internal DTOs.
+- Syncs products into the database.
+- Soft-deletes products (and prevents “reviving” deleted products).
 
-# test coverage
-$ npm run test:cov
-```
+### **ReportsModule** (Private)
+JWT-protected endpoints providing:
+- Deleted products percentage
+- Active products percentage
+- Average price per category
 
-## Deployment
+### **AuthModule**
+- Simple login endpoint
+- Issues JWT tokens
+- Used only for this challenge, but extendable to real users
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 🗃 Product Model (Database)
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+The `Product` table includes:
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+- `id` (uuid)
+- `externalId` (unique identifier from Contentful)
+- `sku`, `name`, `brand`, `model`, `category`, `color`
+- `price`, `currency`, `stock`
+- `contentCreatedAt` (timestamptz, nullable - creation date from Contentful)
+- `contentUpdatedAt` (timestamptz, nullable - last update date from Contentful)
+- `createdAt` (timestamptz - record creation timestamp)
+- `updatedAt` (timestamptz - record last update timestamp)
+- `deleted` (boolean - soft delete flag)
+- `deletedAt` (timestamptz, nullable - soft delete timestamp)
 
-## Resources
+### Soft Delete Behavior
+- Deleted products never appear in public listing.
+- Contentful sync does **not** revive soft-deleted products.
+- New or updated items are processed in batches for performance.
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 🔄 Sync Flow
 
-## Support
+1. Fetch paginated products from Contentful.
+2. Map each entry to an internal `UpsertProductDto`.
+3. Load existing products using one DB query (`IN(externalIds)`).
+4. Decide whether to creating, updating, or ignoring each item.
+5. Save changes in chunks to avoid database overload.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## 🌐 Public API
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### `GET /api/v1/products`
+Returns paginated and filtered list of active products.
 
-## License
+Available filters:
+- `name`
+- `category`
+- Pagination (`page`, `limit`)
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Example:
+
