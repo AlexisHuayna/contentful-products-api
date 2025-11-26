@@ -8,6 +8,7 @@ import { ContentfulModule } from './contentful/contentful.module';
 import { envValidationSchema } from './config/env.validation';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AuthModule } from './auth/auth.module';
     ProductsModule,
     ContentfulModule,
     AuthModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [AppService],
