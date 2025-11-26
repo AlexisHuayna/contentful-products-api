@@ -4,12 +4,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './products/products.module';
 import { Product } from './products/entities/product';
+import { ContentfulModule } from './contentful/contentful.module';
+import { envValidationSchema } from './config/env.validation';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      validationSchema: envValidationSchema,
+      validationOptions: {
+        abortEarly: true, // Detiene la validación en el primer error
+      },
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -28,6 +34,7 @@ import { Product } from './products/entities/product';
       inject: [ConfigService],
     }),
     ProductsModule,
+    ContentfulModule,
   ],
   controllers: [],
   providers: [AppService],
