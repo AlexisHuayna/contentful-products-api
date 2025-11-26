@@ -6,9 +6,11 @@ import { ProductsModule } from './products/products.module';
 import { Product } from './products/entities/product';
 import { ContentfulModule } from './contentful/contentful.module';
 import { envValidationSchema } from './config/env.validation';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
