@@ -5,13 +5,12 @@ import { ContentfulProductsResponse } from 'src/types/contentful-product.interfa
 
 @Injectable()
 export class ContentfulService {
+  constructor(private readonly httpService: HttpService) {}
 
-    constructor(private readonly httpService: HttpService) {}
-
-    async fetchProducts(): Promise<ContentfulProductsResponse> {
-        const response = await firstValueFrom(
-            this.httpService.get<ContentfulProductsResponse>('/entries')
-        );
-        return response?.data;
-    }
+  async fetchProducts(): Promise<ContentfulProductsResponse> {
+    const response = await firstValueFrom(
+      this.httpService.get<ContentfulProductsResponse>('/entries'),
+    );
+    return response?.data;
+  }
 }

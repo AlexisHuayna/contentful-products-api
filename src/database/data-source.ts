@@ -6,10 +6,11 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 
 config({
-    path: resolve(process.cwd(), '.env'),
+  path: resolve(process.cwd(), '.env'),
 });
 
-const isProduction = __dirname.includes('dist') || process.env.NODE_ENV === 'production';
+const isProduction =
+  __dirname.includes('dist') || process.env.NODE_ENV === 'production';
 const migrationExtension = isProduction ? 'js' : 'ts';
 
 export const AppDataSource = new DataSource({

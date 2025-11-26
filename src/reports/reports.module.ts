@@ -9,6 +9,6 @@ import { ApiReportsMapper } from './mappers/api-reports.mapper';
 @Module({
   imports: [TypeOrmModule.forFeature([Product])],
   controllers: [ReportsController],
-  providers: [ReportsService, ProductRepository, ApiReportsMapper]
+  providers: [ReportsService, ProductRepository, ApiReportsMapper],
 })
 export class ReportsModule {}

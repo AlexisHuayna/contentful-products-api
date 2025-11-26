@@ -3,7 +3,10 @@ import { ProductRepository } from './product.repository';
 import { DataSource } from 'typeorm';
 import { Product } from '../entities/product';
 import { ProductFilters } from '../dto/product-filters';
-import { BadRequestException, NotFoundException } from '@nestjs/common/exceptions';
+import {
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common/exceptions';
 import { UpdateResult } from 'typeorm';
 
 describe('ProductRepository', () => {
@@ -342,12 +345,12 @@ describe('ProductRepository', () => {
     it('should throw NotFoundException when product not found', async () => {
       mockFindOne.mockResolvedValue(null);
 
-      await expect(repository.softDeleteById('non-existent-id')).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(repository.softDeleteById('non-existent-id')).rejects.toThrow(
-        'Product with ID non-existent-id not found',
-      );
+      await expect(
+        repository.softDeleteById('non-existent-id'),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        repository.softDeleteById('non-existent-id'),
+      ).rejects.toThrow('Product with ID non-existent-id not found');
       expect(mockUpdate).not.toHaveBeenCalled();
     });
 
