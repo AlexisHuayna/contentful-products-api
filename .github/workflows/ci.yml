@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run test:cov
+
+      - name: Check coverage
+        run: |
+          node << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          
+          const threshold = 30;
+          const coveragePath = path.join(process.cwd(), 'coverage', 'coverage-final.json');
+          
+          if (!fs.existsSync(coveragePath)) {
+            console.error('Coverage file not found');
+            process.exit(1);
+          }
+          
+          const coverage = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
+          
+          let totalStatements = 0, coveredStatements = 0;
+          let totalBranches = 0, coveredBranches = 0;
+          let totalFunctions = 0, coveredFunctions = 0;
+          let totalLines = 0, coveredLines = 0;
+          
+          Object.values(coverage).forEach(file => {
+            if (file.s) {
+              Object.values(file.s).forEach(count => {
+                totalStatements++;
+                if (count > 0) coveredStatements++;
+              });
+            }
+            
+            if (file.b) {
+              Object.values(file.b).forEach(branch => {
+                if (Array.isArray(branch)) {
+                  branch.forEach(count => {
+                    totalBranches++;
+                    if (count > 0) coveredBranches++;
+                  });
+                }
+              });
+            }
+            
+            if (file.f) {
+              Object.values(file.f).forEach(count => {
+                totalFunctions++;
+                if (count > 0) coveredFunctions++;
+              });
+            }
+            
+            if (file.statementMap) {
+              Object.keys(file.statementMap).forEach(key => {
+                totalLines++;
+                if (file.s && file.s[key] > 0) {
+                  coveredLines++;
+                }
+              });
+            }
+          });
+          
+          const statementsPct = totalStatements > 0 ? (coveredStatements / totalStatements * 100) : 0;
+          const branchesPct = totalBranches > 0 ? (coveredBranches / totalBranches * 100) : 0;
+          const functionsPct = totalFunctions > 0 ? (coveredFunctions / totalFunctions * 100) : 0;
+          const linesPct = totalLines > 0 ? (coveredLines / totalLines * 100) : 0;
+          
+          console.log(`Statements: ${statementsPct.toFixed(2)}%`);
+          console.log(`Branches: ${branchesPct.toFixed(2)}%`);
+          console.log(`Functions: ${functionsPct.toFixed(2)}%`);
+          console.log(`Lines: ${linesPct.toFixed(2)}%`);
+          
+          let failed = false;
+          
+          if (statementsPct < threshold) {
+            console.error(`Statements coverage ${statementsPct.toFixed(2)}% is below ${threshold}%`);
+            failed = true;
+          }
+          
+          if (branchesPct < threshold) {
+            console.error(`Branches coverage ${branchesPct.toFixed(2)}% is below ${threshold}%`);
+            failed = true;
+          }
+          
+          if (functionsPct < threshold) {
+            console.error(`Functions coverage ${functionsPct.toFixed(2)}% is below ${threshold}%`);
+            failed = true;
+          }
+          
+          if (linesPct < threshold) {
+            console.error(`Lines coverage ${linesPct.toFixed(2)}% is below ${threshold}%`);
+            failed = true;
+          }
+          
+          if (failed) {
+            process.exit(1);
+          }
+          EOF
+

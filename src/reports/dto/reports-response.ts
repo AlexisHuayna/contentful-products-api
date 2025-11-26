@@ -1,13 +1,13 @@
 export class ReportDeletedPercentageResponseDto {
-    deletedPercentage: number;
+  deletedPercentage: number;
 }
 
 export class ReportActivePercentageResponseDto {
-    activePercentage: number;
-    avgPrice?: number | null;
+  activePercentage: number;
+  avgPrice?: number | null;
 }
 
 export class ReportAvgPriceByCategoryResponseDto {
-    category: string;
-    avg: number;
+  category: string;
+  avg: number;
 }

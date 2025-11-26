@@ -12,6 +12,12 @@ import { ApiProductMapper } from './mappers/api-product.mapper';
 @Module({
   imports: [TypeOrmModule.forFeature([Product]), ContentfulModule],
   controllers: [ProductsController],
-  providers: [ProductsService, ProductRepository, ContentfulProductMapper, ProductSyncService, ApiProductMapper]
+  providers: [
+    ProductsService,
+    ProductRepository,
+    ContentfulProductMapper,
+    ProductSyncService,
+    ApiProductMapper,
+  ],
 })
 export class ProductsModule {}

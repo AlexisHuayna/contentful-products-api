@@ -3,7 +3,10 @@ import { ProductSyncService } from './product-sync.service';
 import { ProductsService } from './products.service';
 import { ContentfulProductMapper } from '../mappers/contentful-product.mapper';
 import { ContentfulService } from 'src/contentful/services/contentful.service';
-import { ContentfulProductsResponse, ContentfulProductItem } from 'src/types/contentful-product.interface';
+import {
+  ContentfulProductsResponse,
+  ContentfulProductItem,
+} from 'src/types/contentful-product.interface';
 import { ProductUpsertDto } from '../dto/product-upsert';
 
 describe('ProductSyncService', () => {
@@ -20,10 +23,14 @@ describe('ProductSyncService', () => {
       type: 'Entry',
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-02T00:00:00Z',
-      environment: { sys: { type: 'Link', linkType: 'Environment', id: 'env-id' } },
+      environment: {
+        sys: { type: 'Link', linkType: 'Environment', id: 'env-id' },
+      },
       publishedVersion: 1,
       revision: 1,
-      contentType: { sys: { type: 'Link', linkType: 'ContentType', id: 'product' } },
+      contentType: {
+        sys: { type: 'Link', linkType: 'ContentType', id: 'product' },
+      },
       locale: 'en-US',
     },
     fields: {
@@ -67,7 +74,9 @@ describe('ProductSyncService', () => {
     };
 
     const mockContentfulProductMapper = {
-      mapEntriesToProductUpsertDtos: jest.fn().mockReturnValue([mockProductUpsertDto]),
+      mapEntriesToProductUpsertDtos: jest
+        .fn()
+        .mockReturnValue([mockProductUpsertDto]),
     };
 
     const mockContentfulService = {
@@ -111,27 +120,32 @@ describe('ProductSyncService', () => {
       await service.syncProducts();
 
       expect(contentfulService.fetchProducts).toHaveBeenCalledTimes(1);
-      expect(contentfulProductMapper.mapEntriesToProductUpsertDtos).toHaveBeenCalledWith(
-        mockContentfulResponse.items,
-      );
-      expect(productsService.upsertFromContentful).toHaveBeenCalledWith([mockProductUpsertDto]);
+      expect(
+        contentfulProductMapper.mapEntriesToProductUpsertDtos,
+      ).toHaveBeenCalledWith(mockContentfulResponse.items);
+      expect(productsService.upsertFromContentful).toHaveBeenCalledWith([
+        mockProductUpsertDto,
+      ]);
     });
 
     it('should call dependencies in the correct order', async () => {
       const callOrder: string[] = [];
 
-      contentfulService.fetchProducts.mockImplementation(async () => {
+      contentfulService.fetchProducts.mockImplementation(() => {
         callOrder.push('fetchProducts');
-        return mockContentfulResponse;
+        return Promise.resolve(mockContentfulResponse);
       });
 
-      contentfulProductMapper.mapEntriesToProductUpsertDtos.mockImplementation((entries) => {
-        callOrder.push('mapEntriesToProductUpsertDtos');
-        return [mockProductUpsertDto];
-      });
+      contentfulProductMapper.mapEntriesToProductUpsertDtos.mockImplementation(
+        () => {
+          callOrder.push('mapEntriesToProductUpsertDtos');
+          return [mockProductUpsertDto];
+        },
+      );
 
-      productsService.upsertFromContentful.mockImplementation(async () => {
+      productsService.upsertFromContentful.mockImplementation(() => {
         callOrder.push('upsertFromContentful');
+        return Promise.resolve();
       });
 
       await service.syncProducts();
@@ -157,7 +171,9 @@ describe('ProductSyncService', () => {
       await service.syncProducts();
 
       expect(contentfulService.fetchProducts).toHaveBeenCalledTimes(1);
-      expect(contentfulProductMapper.mapEntriesToProductUpsertDtos).toHaveBeenCalledWith([]);
+      expect(
+        contentfulProductMapper.mapEntriesToProductUpsertDtos,
+      ).toHaveBeenCalledWith([]);
       expect(productsService.upsertFromContentful).toHaveBeenCalledWith([]);
     });
 
@@ -170,7 +186,9 @@ describe('ProductSyncService', () => {
       await service.syncProducts();
 
       expect(contentfulService.fetchProducts).toHaveBeenCalledTimes(1);
-      expect(contentfulProductMapper.mapEntriesToProductUpsertDtos).not.toHaveBeenCalled();
+      expect(
+        contentfulProductMapper.mapEntriesToProductUpsertDtos,
+      ).not.toHaveBeenCalled();
       expect(productsService.upsertFromContentful).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
 
@@ -181,14 +199,18 @@ describe('ProductSyncService', () => {
       const error = new Error('Mapping error');
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      contentfulProductMapper.mapEntriesToProductUpsertDtos.mockImplementation(() => {
-        throw error;
-      });
+      contentfulProductMapper.mapEntriesToProductUpsertDtos.mockImplementation(
+        () => {
+          throw error;
+        },
+      );
 
       await service.syncProducts();
 
       expect(contentfulService.fetchProducts).toHaveBeenCalledTimes(1);
-      expect(contentfulProductMapper.mapEntriesToProductUpsertDtos).toHaveBeenCalled();
+      expect(
+        contentfulProductMapper.mapEntriesToProductUpsertDtos,
+      ).toHaveBeenCalled();
       expect(productsService.upsertFromContentful).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
 
@@ -204,7 +226,9 @@ describe('ProductSyncService', () => {
       await service.syncProducts();
 
       expect(contentfulService.fetchProducts).toHaveBeenCalledTimes(1);
-      expect(contentfulProductMapper.mapEntriesToProductUpsertDtos).toHaveBeenCalled();
+      expect(
+        contentfulProductMapper.mapEntriesToProductUpsertDtos,
+      ).toHaveBeenCalled();
       expect(productsService.upsertFromContentful).toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
 
@@ -221,26 +245,39 @@ describe('ProductSyncService', () => {
           {
             ...mockContentfulProductItem,
             sys: { ...mockContentfulProductItem.sys, id: 'product-2' },
-            fields: { ...mockContentfulProductItem.fields, name: 'Test Product 2' },
+            fields: {
+              ...mockContentfulProductItem.fields,
+              name: 'Test Product 2',
+            },
           },
         ],
       };
 
       const multipleDtos: ProductUpsertDto[] = [
         mockProductUpsertDto,
-        { ...mockProductUpsertDto, externalId: 'product-2', name: 'Test Product 2' },
+        {
+          ...mockProductUpsertDto,
+          externalId: 'product-2',
+          name: 'Test Product 2',
+        },
       ];
 
-      contentfulService.fetchProducts.mockResolvedValue(multipleProductsResponse);
-      contentfulProductMapper.mapEntriesToProductUpsertDtos.mockReturnValue(multipleDtos);
+      contentfulService.fetchProducts.mockResolvedValue(
+        multipleProductsResponse,
+      );
+      contentfulProductMapper.mapEntriesToProductUpsertDtos.mockReturnValue(
+        multipleDtos,
+      );
 
       await service.syncProducts();
 
       expect(contentfulService.fetchProducts).toHaveBeenCalledTimes(1);
-      expect(contentfulProductMapper.mapEntriesToProductUpsertDtos).toHaveBeenCalledWith(
-        multipleProductsResponse.items,
+      expect(
+        contentfulProductMapper.mapEntriesToProductUpsertDtos,
+      ).toHaveBeenCalledWith(multipleProductsResponse.items);
+      expect(productsService.upsertFromContentful).toHaveBeenCalledWith(
+        multipleDtos,
       );
-      expect(productsService.upsertFromContentful).toHaveBeenCalledWith(multipleDtos);
     });
   });
 });
