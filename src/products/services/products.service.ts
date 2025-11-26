@@ -35,6 +35,7 @@ export class ProductsService {
 
         for (const dto of data) {
             const existingProduct = existingByExternalId.get(dto.externalId);
+
             if (existingProduct && existingProduct.deleted) {
                 continue;
             }
@@ -50,7 +51,7 @@ export class ProductsService {
             productsToSave.push(created);
         }
 
-        this.productRepository.save(productsToSave, { chunk: SAVE_CHUNK_SIZE });
+        await this.productRepository.save(productsToSave, { chunk: SAVE_CHUNK_SIZE });
     }
 
     mapDtoToNewEntity(dto: ProductUpsertDto, created: Product) {
