@@ -1,5 +1,3 @@
-import { ProductUpsertDto } from "../dto/product-upsert";
-import { ContentfulProductItem } from "src/types/contentful-product.interface";
 import { Injectable } from "@nestjs/common";
 import { ProductResponseDto } from "../dto/product-response";
 import { Product } from "../entities/product";

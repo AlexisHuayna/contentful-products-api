@@ -15,5 +15,8 @@ export const envValidationSchema = Joi.object({
   DATABASE_LOGGING: Joi.boolean().default(false),
 
   PORT: Joi.number().default(3000),
+  JWT_SECRET: Joi.string().required(),
+  ADMIN_USERNAME: Joi.string().required(),
+  ADMIN_PASSWORD: Joi.string().required(),
 });
 
