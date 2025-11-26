@@ -48,7 +48,7 @@ export class ProductRepository extends Repository<Product> {
     }
 
     async findByExternalIds(externalIds: string[]): Promise<Product[]> {
-        return this.find({ where: { externalId: In(externalIds) } });
+        return this.find({ where: { externalId: In(externalIds) }, withDeleted: true });
     }
 
     async softDeleteById(id: string): Promise<UpdateResult> {
@@ -60,10 +60,25 @@ export class ProductRepository extends Repository<Product> {
         return this.update(id, { deleted: true, deletedAt: new Date() });
     }
 
-    async save(
-        data: Partial<Product>[],
-        options?: SaveOptions,
-    ): Promise<Product[]> {
-        return super.save(data, options ?? {});
+    async getAveragePrice(startDate: Date, endDate: Date): Promise<number | null> {
+        const result = await this.createQueryBuilder('product')
+            .select('AVG(product.price)', 'avg')
+            .where('product.deleted = :deleted', { deleted: false })
+            .andWhere('product.contentCreatedAt BETWEEN :startDate AND :endDate', {
+                startDate,
+                endDate,
+            })
+            .getRawOne();
+
+        return result?.avg ? parseFloat(result.avg) : null;
+    }
+
+    async getAveragePriceByCategories(): Promise<any> {
+        return this.createQueryBuilder('product')
+            .select('product.category', 'category')
+            .addSelect('AVG(product.price)', 'avg')
+            .where('product.deleted = :deleted', { deleted: false })
+            .groupBy('product.category')
+            .getRawMany();
     }
 }
