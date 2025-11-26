@@ -7,7 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
-  imports: [PassportModule,
+  imports: [
+    PassportModule,
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -22,4 +23,4 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   controllers: [AuthController],
   exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

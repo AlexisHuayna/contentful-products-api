@@ -132,18 +132,13 @@ describe('ProductsController', () => {
       expect(productsService.findPaginated).toHaveBeenCalledWith(filters);
       expect(productsService.findPaginated).toHaveBeenCalledTimes(1);
       expect(apiProductMapper.mapEntityToResponseDto).toHaveBeenCalledTimes(2);
-      // map() passes (element, index, array) to the callback, so we check the first argument
       expect(apiProductMapper.mapEntityToResponseDto).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({ id: 'uuid-1' }),
-        expect.anything(),
-        expect.anything(),
       );
       expect(apiProductMapper.mapEntityToResponseDto).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({ id: 'uuid-2' }),
-        expect.anything(),
-        expect.anything(),
       );
       expect(result).toEqual({
         data: mockResponseDtos,

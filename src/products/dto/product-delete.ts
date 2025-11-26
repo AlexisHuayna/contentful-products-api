@@ -1,4 +1,4 @@
 export class DeleteResponseDto {
-    id: string;
-    deleted: boolean;
+  id: string;
+  deleted: boolean;
 }

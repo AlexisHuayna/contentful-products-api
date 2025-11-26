@@ -7,7 +7,6 @@ import { Product } from '../entities/product';
 
 describe('ProductsService', () => {
   let service: ProductsService;
-  let productRepository: jest.Mocked<ProductRepository>;
 
   const mockProductRepository = {
     findPaginatedWithFilters: jest.fn(),
@@ -29,7 +28,6 @@ describe('ProductsService', () => {
     }).compile();
 
     service = module.get<ProductsService>(ProductsService);
-    productRepository = module.get(ProductRepository);
 
     jest.clearAllMocks();
   });
@@ -43,13 +41,15 @@ describe('ProductsService', () => {
       const filters: ProductFilters = {} as ProductFilters;
       const mockResult: [Product[], number] = [[], 0];
 
-      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(
+        mockResult,
+      );
 
       const result = await service.findPaginated(filters);
 
-      expect(mockProductRepository.findPaginatedWithFilters).toHaveBeenCalledWith(
-        filters,
-      );
+      expect(
+        mockProductRepository.findPaginatedWithFilters,
+      ).toHaveBeenCalledWith(filters);
       expect(result).toEqual({
         data: [],
         page: 1,
@@ -66,13 +66,15 @@ describe('ProductsService', () => {
       } as ProductFilters;
       const mockResult: [Product[], number] = [[], 0];
 
-      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(
+        mockResult,
+      );
 
       const result = await service.findPaginated(filters);
 
-      expect(mockProductRepository.findPaginatedWithFilters).toHaveBeenCalledWith(
-        filters,
-      );
+      expect(
+        mockProductRepository.findPaginatedWithFilters,
+      ).toHaveBeenCalledWith(filters);
       expect(result.page).toBe(2);
       expect(result.pageSize).toBe(3);
     });
@@ -88,7 +90,9 @@ describe('ProductsService', () => {
       ];
       const mockResult: [Product[], number] = [mockProducts, 10];
 
-      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(
+        mockResult,
+      );
 
       const result = await service.findPaginated(filters);
 
@@ -105,7 +109,9 @@ describe('ProductsService', () => {
       const filters: ProductFilters = { page: 1, limit: 5 } as ProductFilters;
       const mockResult: [Product[], number] = [[], 25];
 
-      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(
+        mockResult,
+      );
 
       const result = await service.findPaginated(filters);
 
@@ -116,7 +122,9 @@ describe('ProductsService', () => {
       const filters: ProductFilters = { page: 1, limit: 5 } as ProductFilters;
       const mockResult: [Product[], number] = [[], 23];
 
-      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(
+        mockResult,
+      );
 
       const result = await service.findPaginated(filters);
 
@@ -127,7 +135,9 @@ describe('ProductsService', () => {
       const filters: ProductFilters = { page: 1, limit: 5 } as ProductFilters;
       const mockResult: [Product[], number] = [[], 0];
 
-      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(
+        mockResult,
+      );
 
       const result = await service.findPaginated(filters);
 
@@ -138,7 +148,9 @@ describe('ProductsService', () => {
       const filters: ProductFilters = {} as ProductFilters;
       const mockResult: [Product[], number] = [[], 0];
 
-      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(
+        mockResult,
+      );
 
       const result = await service.findPaginated(filters);
 
@@ -224,7 +236,9 @@ describe('ProductsService', () => {
 
       await service.upsertFromContentful(dtos);
 
-      expect(mockProductRepository.findByExternalIds).toHaveBeenCalledWith(['ext-1']);
+      expect(mockProductRepository.findByExternalIds).toHaveBeenCalledWith([
+        'ext-1',
+      ]);
       expect(mockProductRepository.create).toHaveBeenCalled();
       expect(mockProductRepository.save).toHaveBeenCalledWith(
         [mockCreatedProduct],
@@ -261,7 +275,9 @@ describe('ProductsService', () => {
         deleted: false,
       } as Product;
 
-      mockProductRepository.findByExternalIds.mockResolvedValue([existingProduct]);
+      mockProductRepository.findByExternalIds.mockResolvedValue([
+        existingProduct,
+      ]);
       mockProductRepository.save.mockResolvedValue([existingProduct]);
 
       await service.upsertFromContentful(dtos);
@@ -300,13 +316,17 @@ describe('ProductsService', () => {
         deleted: true,
       } as Product;
 
-      mockProductRepository.findByExternalIds.mockResolvedValue([deletedProduct]);
+      mockProductRepository.findByExternalIds.mockResolvedValue([
+        deletedProduct,
+      ]);
       mockProductRepository.save.mockResolvedValue([]);
 
       await service.upsertFromContentful(dtos);
 
       expect(mockProductRepository.create).not.toHaveBeenCalled();
-      expect(mockProductRepository.save).toHaveBeenCalledWith([], { chunk: 100 });
+      expect(mockProductRepository.save).toHaveBeenCalledWith([], {
+        chunk: 100,
+      });
     });
 
     it('should handle mixed scenario with new, updated, and skipped products', async () => {
@@ -375,7 +395,10 @@ describe('ProductsService', () => {
       ]);
       const mockNewProduct = new Product();
       mockProductRepository.create.mockReturnValue(mockNewProduct);
-      mockProductRepository.save.mockResolvedValue([mockNewProduct, existingProduct]);
+      mockProductRepository.save.mockResolvedValue([
+        mockNewProduct,
+        existingProduct,
+      ]);
 
       await service.upsertFromContentful(dtos);
 
@@ -422,7 +445,9 @@ describe('ProductsService', () => {
       expect(mockCreatedProduct.name).toBe('Product');
       expect(mockCreatedProduct.brand).toBeNull();
       expect(mockCreatedProduct.contentCreatedAt).toBeNull();
-      expect(mockCreatedProduct.contentUpdatedAt).toEqual(new Date('2024-01-01'));
+      expect(mockCreatedProduct.contentUpdatedAt).toEqual(
+        new Date('2024-01-01'),
+      );
     });
   });
 

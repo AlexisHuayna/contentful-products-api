@@ -10,7 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: (configService: ConfigService) => ({
         baseURL: `https://cdn.contentful.com/spaces/${configService.get<string>('CONTENTFUL_SPACE_ID')}/environments/${configService.get<string>('CONTENTFUL_ENVIRONMENT')}`,
         headers: {
-          'Authorization': `Bearer ${configService.get<string>('CONTENTFUL_ACCESS_TOKEN')}`,
+          Authorization: `Bearer ${configService.get<string>('CONTENTFUL_ACCESS_TOKEN')}`,
         },
         params: {
           content_type: configService.get<string>('CONTENTFUL_CONTENT_TYPE'),
