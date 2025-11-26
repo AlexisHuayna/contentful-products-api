@@ -50,6 +50,7 @@ export class Product {
     @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
     updatedAt: Date;
 
+    @Index()
     @Column({ type: 'boolean', default: false })
     deleted: boolean;
 
