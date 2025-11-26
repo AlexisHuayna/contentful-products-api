@@ -7,10 +7,11 @@ import { ProductRepository } from './repositories/product.repository';
 import { ContentfulProductMapper } from './mappers/contentful-product.mapper';
 import { ProductSyncService } from './services/product-sync.service';
 import { ContentfulModule } from 'src/contentful/contentful.module';
+import { ApiProductMapper } from './mappers/api-product.mapper';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Product]), ContentfulModule],
   controllers: [ProductsController],
-  providers: [ProductsService, ProductRepository, ContentfulProductMapper, ProductSyncService]
+  providers: [ProductsService, ProductRepository, ContentfulProductMapper, ProductSyncService, ApiProductMapper]
 })
 export class ProductsModule {}

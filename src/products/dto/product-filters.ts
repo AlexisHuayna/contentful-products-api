@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
+import { Type } from "class-transformer";
 
 export class ProductFilters {
     @IsOptional()
@@ -12,12 +13,15 @@ export class ProductFilters {
     category: string;
 
     @IsOptional()
-    @IsNumber()
-    @IsNotEmpty()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
     page: number;
 
     @IsOptional()
-    @IsNumber()
-    @IsNotEmpty()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    @Max(5)
     limit: number;
 }

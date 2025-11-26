@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductFilters } from '../dto/product-filters';
 import { ProductRepository } from '../repositories/product.repository';
 import { ProductUpsertDto } from '../dto/product-upsert';
@@ -11,12 +11,15 @@ export class ProductsService {
 
     constructor(private readonly productRepository: ProductRepository) { }
 
-    findPaginated(filters: ProductFilters) {
+    async findPaginated(filters: ProductFilters){
         const { page = 1, limit = 5 } = filters;
-        return this.productRepository.findPaginatedWithFilters(filters, page, limit);
+        const [data, total] = await this.productRepository.findPaginatedWithFilters(filters);
+        return {data, page, pageSize: limit, total, totalPages: Math.ceil(total / limit)};
     }
 
-    deleteById(id: number) { }
+    async deleteById(id: string) {
+        return this.productRepository.softDeleteById(id);
+    }
 
     async upsertFromContentful(data: ProductUpsertDto[]): Promise<void> {
         if (!data.length) return;
