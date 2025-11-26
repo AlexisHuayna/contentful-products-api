@@ -14,6 +14,7 @@ describe('ProductsService', () => {
     findByExternalIds: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
+    softDeleteById: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -38,40 +39,45 @@ describe('ProductsService', () => {
   });
 
   describe('findPaginated', () => {
-    it('should call repository with default page and limit when not provided', () => {
+    it('should call repository with DTO when default page and limit are not provided', async () => {
       const filters: ProductFilters = {} as ProductFilters;
       const mockResult: [Product[], number] = [[], 0];
 
       mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
 
-      service.findPaginated(filters);
+      const result = await service.findPaginated(filters);
 
       expect(mockProductRepository.findPaginatedWithFilters).toHaveBeenCalledWith(
         filters,
-        1,
-        5,
       );
+      expect(result).toEqual({
+        data: [],
+        page: 1,
+        pageSize: 5,
+        total: 0,
+        totalPages: 0,
+      });
     });
 
-    it('should call repository with provided page and limit', () => {
+    it('should call repository with DTO when page and limit are provided', async () => {
       const filters: ProductFilters = {
         page: 2,
-        limit: 10,
+        limit: 3,
       } as ProductFilters;
       const mockResult: [Product[], number] = [[], 0];
 
       mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
 
-      service.findPaginated(filters);
+      const result = await service.findPaginated(filters);
 
       expect(mockProductRepository.findPaginatedWithFilters).toHaveBeenCalledWith(
         filters,
-        2,
-        10,
       );
+      expect(result.page).toBe(2);
+      expect(result.pageSize).toBe(3);
     });
 
-    it('should return the result from repository', async () => {
+    it('should return formatted result from repository', async () => {
       const filters: ProductFilters = { page: 1, limit: 5 } as ProductFilters;
       const mockProducts: Product[] = [
         {
@@ -80,23 +86,108 @@ describe('ProductsService', () => {
           name: 'Product 1',
         } as Product,
       ];
-      const mockResult: [Product[], number] = [mockProducts, 1];
+      const mockResult: [Product[], number] = [mockProducts, 10];
 
       mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
 
       const result = await service.findPaginated(filters);
 
-      expect(result).toEqual(mockResult);
+      expect(result).toEqual({
+        data: mockProducts,
+        page: 1,
+        pageSize: 5,
+        total: 10,
+        totalPages: 2,
+      });
+    });
+
+    it('should calculate totalPages correctly when total is exactly divisible by limit', async () => {
+      const filters: ProductFilters = { page: 1, limit: 5 } as ProductFilters;
+      const mockResult: [Product[], number] = [[], 25];
+
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+
+      const result = await service.findPaginated(filters);
+
+      expect(result.totalPages).toBe(5); // 25 / 5 = 5
+    });
+
+    it('should calculate totalPages correctly when total is not divisible by limit', async () => {
+      const filters: ProductFilters = { page: 1, limit: 5 } as ProductFilters;
+      const mockResult: [Product[], number] = [[], 23];
+
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+
+      const result = await service.findPaginated(filters);
+
+      expect(result.totalPages).toBe(5); // Math.ceil(23 / 5) = 5
+    });
+
+    it('should return totalPages as 0 when total is 0', async () => {
+      const filters: ProductFilters = { page: 1, limit: 5 } as ProductFilters;
+      const mockResult: [Product[], number] = [[], 0];
+
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+
+      const result = await service.findPaginated(filters);
+
+      expect(result.totalPages).toBe(0);
+    });
+
+    it('should use default page and limit when not provided', async () => {
+      const filters: ProductFilters = {} as ProductFilters;
+      const mockResult: [Product[], number] = [[], 0];
+
+      mockProductRepository.findPaginatedWithFilters.mockResolvedValue(mockResult);
+
+      const result = await service.findPaginated(filters);
+
+      expect(result.page).toBe(1);
+      expect(result.pageSize).toBe(5);
     });
   });
 
   describe('deleteById', () => {
-    it('should be defined', () => {
-      expect(service.deleteById).toBeDefined();
+    it('should call repository softDeleteById with the provided id', async () => {
+      const id = 'uuid-123';
+      const mockUpdateResult = {
+        affected: 1,
+        raw: [],
+        generatedMaps: [],
+      };
+
+      mockProductRepository.softDeleteById.mockResolvedValue(mockUpdateResult);
+
+      const result = await service.deleteById(id);
+
+      expect(mockProductRepository.softDeleteById).toHaveBeenCalledWith(id);
+      expect(mockProductRepository.softDeleteById).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockUpdateResult);
     });
 
-    it('should not throw when called', () => {
-      expect(() => service.deleteById(1)).not.toThrow();
+    it('should return the result from repository', async () => {
+      const id = 'uuid-456';
+      const mockUpdateResult = {
+        affected: 1,
+        raw: [],
+        generatedMaps: [],
+      };
+
+      mockProductRepository.softDeleteById.mockResolvedValue(mockUpdateResult);
+
+      const result = await service.deleteById(id);
+
+      expect(result).toBe(mockUpdateResult);
+    });
+
+    it('should propagate errors from repository', async () => {
+      const id = 'invalid-uuid';
+      const error = new Error('Repository error');
+
+      mockProductRepository.softDeleteById.mockRejectedValue(error);
+
+      await expect(service.deleteById(id)).rejects.toThrow('Repository error');
+      expect(mockProductRepository.softDeleteById).toHaveBeenCalledWith(id);
     });
   });
 

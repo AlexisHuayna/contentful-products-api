@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { BadRequestException, NotFoundException } from '@nestjs/common/exceptions';
-import { DataSource, FindOptionsWhere, In, InsertResult, Repository, SaveOptions, UpdateResult } from 'typeorm';
+import { DataSource, FindOptionsWhere, ILike, In, InsertResult, Repository, SaveOptions, UpdateResult } from 'typeorm';
 import { Product } from '../entities/product';
+import { ProductFilters } from '../dto/product-filters';
 
 const DEFAULT_PAGE_LIMIT = 5;
 const MAX_PAGE_LIMIT = 5;
@@ -13,10 +14,10 @@ export class ProductRepository extends Repository<Product> {
     }
 
     async findPaginatedWithFilters(
-        filters: FindOptionsWhere<Product>,
-        page: number,
-        limit: number = DEFAULT_PAGE_LIMIT,
+        filters: ProductFilters,
     ): Promise<[Product[], number]> {
+        const { page = 1, limit = DEFAULT_PAGE_LIMIT, name, category } = filters;
+
         if (page < 1) {
             throw new BadRequestException('Page number must be greater than 0');
         }
@@ -27,8 +28,20 @@ export class ProductRepository extends Repository<Product> {
             );
         }
 
+        const whereConditions: FindOptionsWhere<Product> = {
+            deleted: false,
+        };
+
+        if (name) {
+            whereConditions.name = ILike(`%${name}%`);
+        }
+
+        if (category) {
+            whereConditions.category = ILike(`%${category}%`);
+        }
+
         return this.findAndCount({
-            where: filters,
+            where: whereConditions,
             skip: (page - 1) * limit,
             take: limit,
         });
