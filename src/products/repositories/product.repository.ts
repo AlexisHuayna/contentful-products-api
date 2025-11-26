@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BadRequestException, NotFoundException } from '@nestjs/common/exceptions';
-import { DataSource, FindOptionsWhere, InsertResult, Repository, UpdateResult } from 'typeorm';
+import { DataSource, FindOptionsWhere, In, InsertResult, Repository, SaveOptions, UpdateResult } from 'typeorm';
 import { Product } from '../entities/product';
 
 const DEFAULT_PAGE_LIMIT = 5;
@@ -34,6 +34,10 @@ export class ProductRepository extends Repository<Product> {
         });
     }
 
+    async findByExternalIds(externalIds: string[]): Promise<Product[]> {
+        return this.find({ where: { externalId: In(externalIds) } });
+    }
+
     async softDeleteById(id: string): Promise<UpdateResult> {
         const product = await this.findOne({ where: { id } });
         if (!product) {
@@ -43,9 +47,10 @@ export class ProductRepository extends Repository<Product> {
         return this.update(id, { deleted: true, deletedAt: new Date() });
     }
 
-    async upsertFromContentful(
-        data: Partial<Product>,
-    ): Promise<InsertResult> {
-        return this.upsert(data, { conflictPaths: ['externalId'], skipUpdateIfNoValuesChanged: true });
+    async save(
+        data: Partial<Product>[],
+        options?: SaveOptions,
+    ): Promise<Product[]> {
+        return super.save(data, options ?? {});
     }
 }

@@ -10,27 +10,27 @@ export class Product {
     externalId: string;
 
     @Column({ type: 'int', nullable: true})
-    sku: number;
+    sku: number | null;
 
     @Column({ type: 'varchar'})
     name: string;
 
     @Column({ type: 'varchar', nullable: true })
-    brand: string;
+    brand: string | null;
 
     @Index()
     @Column({ type: 'varchar', nullable: true })
-    model: string;
+    model: string | null;
 
     @Index()
     @Column({ type: 'varchar', nullable: true })
-    category: string;
+    category: string | null;
 
     @Column({ type: 'varchar', nullable: true })
-    color: string;
+    color: string | null;
 
     @Column({ type: 'numeric', nullable: true })
-    price: number | null;
+    price: number | null;   
 
     @Column({ type: 'varchar', nullable: true })
     currency: string | null;
@@ -39,10 +39,10 @@ export class Product {
     stock: number | null;
 
     @Column({ type: 'timestamptz', nullable: true })
-    contentCreatedAt: Date;
+    contentCreatedAt: Date | null;
     
     @Column({ type: 'timestamptz', nullable: true })
-    contentUpdatedAt: Date;
+    contentUpdatedAt: Date | null;
 
     @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;

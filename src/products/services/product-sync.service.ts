@@ -13,8 +13,14 @@ export class ProductSyncService {
         private readonly contentfulService: ContentfulService,
     ) { }
 
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
     async syncProducts() {
-        console.log('EXECUTING PRODUCT SYNC');
+        try { 
+            const entries = await this.contentfulService.fetchProducts();
+            const productUpsertDtos = this.contentfulProductMapper.mapEntriesToProductUpsertDtos(entries.items);
+            await this.productsService.upsertFromContentful(productUpsertDtos);
+        } catch (error) {
+            console.error(error);
+        }
     }
 }
