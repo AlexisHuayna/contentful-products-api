@@ -6,9 +6,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductRepository } from './repositories/product.repository';
 import { ContentfulProductMapper } from './mappers/contentful-product.mapper';
 import { ProductSyncService } from './services/product-sync.service';
+import { ContentfulModule } from 'src/contentful/contentful.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product])],
+  imports: [TypeOrmModule.forFeature([Product]), ContentfulModule],
   controllers: [ProductsController],
   providers: [ProductsService, ProductRepository, ContentfulProductMapper, ProductSyncService]
 })
